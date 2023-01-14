@@ -1,0 +1,13 @@
+{
+    "description": "MVC iNFLUENCE DIGITAL",
+    "authors":[
+        {
+            "name": "iNFLUENCE DIGITAL"
+        }
+    ],
+    "autoload":{
+        "psr-4":{
+            "InfluenceDigital\\": "aplicacao"
+        }
+    }
+}
