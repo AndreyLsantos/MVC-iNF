@@ -12,6 +12,8 @@ class HomeController
     
     public function index()
     {
+        $model = new Model('usuarios');
+        $model->criar(['nome'=>'andrey', 'email'=> 'andrey.1@hotmail.com']);
         $data = [
             'titulo' => "Home",
             'load'=> new Helper(),

@@ -53,43 +53,38 @@ class Model
         $sql = "SELECT * FROM " . $this->tabela . " WHERE id = :id LIMIT 1 ";
         $query = $this->pdo->prepare($sql);
         $query->execute([':id'=>$id]);
-        return $query->fetch();
+        $result = $query->fetch();
+        if($result === false){
+            throw new Exception("Registro com id: {$id} não foi encontrado");
+        }
+        return $result;
     }
 
     public function criar($campos, $condicao = [])
     {
-        // $param pra consulta no sql no formato $key = :$key
         $param = [];
-
-        // $paramValue parametro pro $query->execute($paramValue) no formato ([':param' => $param] )
         $paramValue = [];
+        $campos = array_diff_key($campos, array_flip($condicao));
         foreach($campos as $key => $values){
-            // se a chave tiver no array condicao
-            if(!in_array($key, $condicao)){
-                $param[]= $key . '= :' . $key;
-                $paramValue[':' . $key] = $values;
-            }
-        }        
-        $sql = "INSERT INTO  " . $this->tabela . ' '.  implode(', ', $param);
+            $param[]= ":$key";
+            $paramValue[":$key"] = $values;
+        }    
+        $campos = implode(',', array_keys($campos));
+        $param = implode(',', $param);  
+        $sql = "INSERT INTO $this->tabela ($campos) VALUES ($param) ";
         $query = $this->pdo->prepare($sql);
         $exec = $query->execute($paramValue);
-        if($exec){
-           $return = $this->pdo->lastInsertId();
-        }else{
-            $return = false;
-        }
-        return $return;
+        return $exec ? $this->pdo->lastInsertId() : false;
     }
 
     public function atualizar($campos, $condicao = [])
     {
         $param = [];
         $paramValues = [];
+        $campos = array_diff_key($campos, array_flip($condicao));
         foreach($campos as $key => $values){
-            if(!in_array($key, $condicao)){
-                $param[] = $key . " = :" . $key;
-                $paramValues[':' . $key ] = $values ;
-            }
+            $param[]= ":$key";
+            $paramValue[":$key"] = $values;
         }
         $sql = "UPDATE " . $this->tabela . " SET " . implode(', ', $param) . " WHERE id = :id LIMIT 1";
         $query = $this->pdo->prepare($sql);
@@ -97,13 +92,8 @@ class Model
     }
 
     public function deletar($id){
-        try{
-            $sql = "DELETE * FROM " . $this->tabela . " WHERE id = :id LIMIT 1 ";
-            $query = $this->pdo->prepare($sql);
-            $query->execute([':id'=>$id]);
-        }catch(Exception $e){
-            die('Algo deu errado, contate um administrador ou retorne mais tarde!');
-        }
- 
+        $sql = "DELETE FROM " . $this->tabela . " WHERE id = :id LIMIT 1 ";
+        $query = $this->pdo->prepare($sql);
+        return $query->execute([':id'=>$id]); 
     }
 }
